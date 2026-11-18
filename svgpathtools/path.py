@@ -3062,6 +3062,29 @@ class Path(MutableSequence):
                                  ind not in indices2remove]
         return intersection_list
 
+    def split_at_intersections(self, tol=1e-9, max_intersections=1000):
+        """Split this path at every point where it crosses or touches itself
+        into edge segments that meet at shared nodes.
+
+        This is a thin wrapper around
+        :func:`svgpathtools.split_path_at_intersections`; see that function
+        for the full description of the parameters, the returned
+        :class:`~svgpathtools.SplitPath` object and the exceptions that may be
+        raised (``InvalidToleranceError``, ``IntersectionLimitError``,
+        ``OverlappingGeometryError``).
+
+        Args:
+            tol (float): absolute distance tolerance for merging nodes; must
+                be finite and strictly positive.
+            max_intersections (int or None): cap on distinct interior
+                intersection nodes; ``None`` removes the cap.
+        """
+        # Imported lazily to avoid a circular import (split.py imports from
+        # this module).
+        from .split import split_path_at_intersections
+        return split_path_at_intersections(
+            self, tol=tol, max_intersections=max_intersections)
+
     def bbox(self):
         """returns bounding box in the form (xmin, xmax, ymin, ymax)."""
         bbs = [seg.bbox() for seg in self._segments]

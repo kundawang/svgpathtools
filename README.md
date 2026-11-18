@@ -22,6 +22,9 @@ Some included tools:
 - compute **curvature**
 - break discontinuous paths into their **continuous subpaths**.
 - efficiently compute **intersections** between paths and/or segments
+- **split a self-intersecting path** into edge segments that meet at shared
+  nodes (`Path.split_at_intersections`), handling tangencies, collinear
+  overlaps and closed-path seam de-duplication
 - find a **bounding box** for a path or segment
 - **reverse** segment/path orientation
 - **crop** and **split** paths and segments
@@ -165,6 +168,39 @@ print("Notice that path contains {} segments and spath contains {} segments."
          CubicBezier(start=(250+350j), control1=(275+350j), control2=(250+225j), end=(200+100j)),
          CubicBezier(start=(200+100j), control1=(199.62675237+99.0668809257j), control2=(200+100.495j), end=(200+101.5j)))
     Notice that path contains 3 segments and spath contains 6 segments.
+
+
+### Splitting a self-intersecting path
+
+A path that crosses or touches itself can be cut at every intersection into
+edge segments joined at shared nodes — useful for cutting software that needs
+the intersection points and the continuous edges between them.
+
+```python
+from svgpathtools import Path, Line
+
+# A figure-8: a square plus its two diagonals (the diagonals cross once).
+path = Path(
+    Line(0+0j, 100+0j), Line(100+0j, 100+100j),
+    Line(100+100j, 0+100j), Line(0+100j, 0+0j),
+    Line(0+0j, 100+100j), Line(100+100j, 100+0j),
+    Line(100+0j, 0+100j), Line(0+100j, 0+0j),
+)
+result = path.split_at_intersections(tol=1e-9)
+
+result.nodes           # all nodes in path order, merged within `tol`
+result.edges           # edge segments sharing those nodes (Line/Bezier/Arc)
+result.intersections   # IntersectionPoint records with their incidences
+result.path            # a normal Path built from the edges (point(), d(), ...)
+assert result.closed   # the head/tail seam was de-duplicated to one node
+```
+
+Tangent contacts become one shared node, collinear line overlaps are reported
+in `result.overlaps`, zero-length segments are kept and listed in
+`result.zero_length_segments`, and an illegal `tol` raises
+`InvalidToleranceError` while exceeding `max_intersections` raises
+`IntersectionLimitError`.  Two non-linear segments that coincide over an
+interval raise `OverlappingGeometryError`.
 
 
 ### Reading SVGSs

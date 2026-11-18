@@ -15,6 +15,10 @@ from .smoothing import smoothed_path, smoothed_joint, is_differentiable, kinks
 from .document import (Document, CONVERSIONS, CONVERT_ONLY_PATHS,
                        SVG_GROUP_TAG, SVG_NAMESPACE)
 from .svg_io_sax import SaxDocument
+from .split import (
+    split_path_at_intersections, SplitPath, IntersectionPoint, Overlap,
+    SplitPathError, InvalidToleranceError, IntersectionLimitError,
+    OverlappingGeometryError)
 
 try:
     from .svg_to_paths import svg2paths, svg2paths2, svgstr2paths
